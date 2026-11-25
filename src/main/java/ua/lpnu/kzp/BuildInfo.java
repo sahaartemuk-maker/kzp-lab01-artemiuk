@@ -20,7 +20,7 @@ public final class BuildInfo {
     /**
      * Повертає версію з POM разом із номером збірки.
      *
-     * @return рядок у форматі {@code версія+збірка}, наприклад {@code 1.0.0+42}
+     * @return рядок у форматі {@code версія+збірка}, наприклад {@code 2.0.0+42}
      * @throws IllegalStateException якщо ресурс відсутній або не містить потрібних ключів
      * @throws UncheckedIOException якщо ресурс не вдалося прочитати
      */

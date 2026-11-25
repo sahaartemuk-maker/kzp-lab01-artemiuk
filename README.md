@@ -31,10 +31,10 @@ date;kind;minutes;distanceKm;calories
 ## Збірка та запуск
 ```text
 ./mvnw clean verify                         # тести + SpotBugs + JAR
-java -jar target/lab01-1.0.0.jar --help
-java -jar target/lab01-1.0.0.jar --version  # 1.0.0+local
-java -jar target/lab01-1.0.0.jar
-java -jar target/lab01-1.0.0.jar --input data/input.csv --output out/report.txt
+java -jar target/lab01-2.0.0.jar --help
+java -jar target/lab01-2.0.0.jar --version  # 2.0.0+local
+java -jar target/lab01-2.0.0.jar
+java -jar target/lab01-2.0.0.jar --input data/input.csv --output out/report.txt
 ```
 У Windows замість `./mvnw` використовуйте `mvnw.cmd`.
 
@@ -48,3 +48,9 @@ src/main/java/ua/lpnu/kzp/
   FileReport.java       читання/запис файлів (UTF-8)
   BuildInfo.java        версія + номер збірки
 ```
+
+## ЛР № 2 — класи, record і інкапсуляція
+Рядки та `String[]` замінено моделлю `Training` (клас-сутність з інваріантами
+в конструкторі й фабрикою `fromCsv`) і record `TrainingSummary`. Зовнішня
+поведінка не змінилась — це перевіряє `RegressionTest` проти звіту версії v1.0.0.
+Деталі: [REPORT_LR2.md](REPORT_LR2.md).

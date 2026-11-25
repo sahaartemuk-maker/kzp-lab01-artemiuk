@@ -10,7 +10,7 @@ import java.util.List;
 public final class Main {
 
     private static final String USAGE =
-            "Використання: java -jar lab01-1.0.0.jar [--help] [--version] [--input <файл>] [--output <файл>]%n"
+            "Використання: java -jar lab01-2.0.0.jar [--help] [--version] [--input <файл>] [--output <файл>]%n"
             + "  --input   вхідний CSV (за замовчуванням data/input.csv)%n"
             + "  --output  файл звіту (за замовчуванням out/report.txt)%n";
 
