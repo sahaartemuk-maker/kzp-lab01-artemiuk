@@ -102,7 +102,7 @@ CI `.github/workflows/python.yml`: ubuntu/windows/macos, Python 3.12, pytest →
 | № | Зміна | Перевірка |
 |---|---|---|
 | Issue #19 | модель, властивості, dataclass, підтипи, тести, документація | — |
-| PR (Closes #19) | гілка `lab07-oop` → `main`, тег `v7.0.0` | pytest 60 passed, ruff чисто, wheel, CI на 3 ОС |
+| PR #20 (Closes #19) | гілка `lab07-oop` → `main`, merge `4ab5ddc`, тег `v7.0.0` | pytest 60 passed, ruff чисто, wheel, CI на 3 ОС |
 
 ## 11. Академічна доброчесність
 Інструмент: Claude (Anthropic) у застосунку Claude з доступом до теки проєкту. Ролі: менеджер (план
