@@ -1,20 +1,25 @@
-"""Тести функцій аналізу."""
+"""Тести функцій аналізу над об'єктами."""
+
+from datetime import date
 
 import pytest
 
-from kzp_lab06 import (
+from kzp_lab07 import (
+    Training,
     average_pulse,
     distance_by_kind,
     long_trainings,
     longest_training,
     summarize,
+    training_class,
     unique_kinds,
 )
 
 
-def rec(kind: str, duration: int, distance: float, pulse: int, day: str = "2026-09-01") -> dict:
-    """Створює запис для тесту."""
-    return {"date": day, "kind": kind, "duration": duration, "distance": distance, "pulse": pulse}
+def rec(kind: str, duration: int, distance: float, pulse: int, day: str = "2026-09-01") -> Training:
+    """Створює об'єкт підтипу для тесту (factory з loader)."""
+    cls = training_class(kind)
+    return cls(date.fromisoformat(day), kind, duration, distance, pulse)
 
 
 RECORDS = [
@@ -27,7 +32,7 @@ RECORDS = [
 
 def test_filter_boundary() -> None:
     """45 хв входить у відбір, 44 — ні."""
-    assert [r["duration"] for r in long_trainings(RECORDS)] == [45, 90, 90]
+    assert [r.duration for r in long_trainings(RECORDS)] == [45, 90, 90]
 
 
 def test_unique_kinds_with_duplicates() -> None:
@@ -49,7 +54,7 @@ def test_average_pulse() -> None:
 
 def test_longest_first_of_equal() -> None:
     """Серед рівних за тривалістю обирається перше."""
-    assert longest_training(RECORDS)["date"] == "2026-09-03"
+    assert longest_training(RECORDS).day == date(2026, 9, 3)
 
 
 def test_empty_input() -> None:

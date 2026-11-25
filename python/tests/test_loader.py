@@ -1,33 +1,57 @@
-"""Тести завантаження й перетворення CSV."""
+"""Тести завантаження: CSV → об'єкти підтипів."""
 
+from datetime import date
 from pathlib import Path
 
 import pytest
 
-from kzp_lab06 import DataError, load_records, parse_records
+from kzp_lab07 import (
+    Cycling,
+    DataError,
+    GeneralTraining,
+    Running,
+    load_records,
+    parse_records,
+    training_class,
+)
 
 HEADER = "date,kind,duration,distance,pulse\n"
 
 
-def test_valid_row_is_typed() -> None:
-    """Коректний рядок перетворюється на int/float/нормалізований текст."""
+def test_valid_row_becomes_object() -> None:
+    """Коректний рядок перетворюється на Running із типізованими полями."""
     records = parse_records(HEADER + "2026-09-01,  Біг ,45,8.5,152\n")
-    assert records == [
-        {"date": "2026-09-01", "kind": "Біг", "duration": 45, "distance": 8.5, "pulse": 152}
-    ]
+    assert records == [Running(date(2026, 9, 1), "Біг", 45, 8.5, 152)]
 
 
 def test_quoted_field_with_comma() -> None:
-    """Поле з комою в лапках читається як одне значення."""
-    records = parse_records(HEADER + '2026-09-07,"Біг, інтервали",40,6.0,168\n')
-    assert records[0]["kind"] == "Біг, інтервали"
+    """Поле з комою в лапках — один вид, підтип Running."""
+    record = parse_records(HEADER + '2026-09-07,"Біг, інтервали",40,6.0,168\n')[0]
+    assert record.kind == "Біг, інтервали"
+    assert type(record) is Running
+
+
+@pytest.mark.parametrize(
+    ("kind", "cls"),
+    [
+        ("Біг", Running),
+        ("біг, інтервали", Running),
+        ("Велосипед", Cycling),
+        ("Йога", GeneralTraining),
+        ("Плавання", GeneralTraining),
+    ],
+)
+def test_training_class(kind: str, cls: type) -> None:
+    """Factory вибирає підтип лише на межі завантаження."""
+    assert training_class(kind) is cls
 
 
 def test_load_control_file(input_csv: Path) -> None:
-    """Контрольний файл містить 8 записів і дубльовані види."""
+    """8 записів, дублікати видів і всі три підтипи."""
     records = load_records(input_csv)
     assert len(records) == 8
-    assert [r["kind"] for r in records].count("Біг") == 2
+    assert [r.kind for r in records].count("Біг") == 2
+    assert {type(r) for r in records} == {Running, Cycling, GeneralTraining}
 
 
 def test_header_only_gives_empty_list() -> None:
@@ -69,7 +93,7 @@ def test_bad_values(line: str, message: str) -> None:
 def test_error_keeps_cause() -> None:
     """raise ... from зберігає першопричину ValueError."""
     with pytest.raises(DataError) as info:
-        parse_records(HEADER + "2026-09-01,Біг,сорок,8.5,152\n")
+        parse_records(HEADER + "2026-09-01,Біг,-1,8.5,152\n")
     assert isinstance(info.value.__cause__, ValueError)
 
 
@@ -82,7 +106,7 @@ def test_row_number_counts_lines() -> None:
 
 def test_zero_values_allowed() -> None:
     """Нулі — граничні допустимі значення."""
-    assert parse_records(HEADER + "2026-09-08,Йога,0,0.0,0\n")[0]["distance"] == 0.0
+    assert parse_records(HEADER + "2026-09-08,Йога,0,0.0,0\n")[0].distance == 0.0
 
 
 def test_broken_utf8(tmp_path: Path) -> None:

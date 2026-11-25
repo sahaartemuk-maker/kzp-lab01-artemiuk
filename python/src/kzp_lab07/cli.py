@@ -1,4 +1,4 @@
-"""Командний рядок: python -m kzp_lab06.cli <input.csv> <report.txt>."""
+"""Командний рядок: python -m kzp_lab07.cli <input.csv> <report.txt>."""
 
 import argparse
 import sys
@@ -16,7 +16,7 @@ EXIT_IO_ERROR = 2
 def build_parser() -> argparse.ArgumentParser:
     """Створює парсер аргументів CLI."""
     parser = argparse.ArgumentParser(
-        prog="kzp-lab06", description="Звіт за CSV спортивних тренувань (ЛР6, варіант 2)"
+        prog="kzp-lab07", description="Звіт за CSV спортивних тренувань (ЛР7, варіант 2)"
     )
     parser.add_argument("input", type=Path, help="вхідний CSV (UTF-8)")
     parser.add_argument("output", type=Path, help="файл текстового звіту")
