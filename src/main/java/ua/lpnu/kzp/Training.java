@@ -1,5 +1,6 @@
 package ua.lpnu.kzp;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -17,11 +18,16 @@ public abstract class Training {
     /** Кількість полів у CSV-рядку {@code date;kind;minutes;distanceKm;calories}. */
     public static final int FIELD_COUNT = 5;
 
+    @CsvColumn("дата")
     private final String date;
+    @CsvColumn("вид")
     private final String kind;
     private final TrainingKind type;
+    @CsvColumn("тривалість")
     private final int minutes;
+    @CsvColumn("дистанція")
     private final double distanceKm;
+    @CsvColumn("калорії")
     private final int calories;
 
     /**
@@ -115,6 +121,32 @@ public abstract class Training {
             return of(fields[0], fields[1], minutes, distanceKm, calories);
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException("числове поле має помилковий формат", exception);
+        }
+    }
+
+    /**
+     * Відновлює запис із полів експортованого CSV. Порядок полів збігається з
+     * порядком стовпців {@link CsvExporter}: калорії, дата, дистанція, вид,
+     * тривалість (сортування Java-імен полів).
+     *
+     * @param fields розібрані CSV-поля одного запису
+     * @return відновлене тренування потрібного підтипу
+     * @throws DataStorageException якщо кількість полів інша, число має хибний
+     *         формат або порушено інваріант моделі (причина зберігається)
+     */
+    public static Training fromCsvFields(List<String> fields) throws DataStorageException {
+        if (fields == null || fields.size() != FIELD_COUNT) {
+            throw new DataStorageException(String.format(Locale.ROOT,
+                    "Очікується %d CSV-полів, отримано %d",
+                    FIELD_COUNT, fields == null ? 0 : fields.size()));
+        }
+        try {
+            int calories = Integer.parseInt(fields.get(0).trim());
+            double distanceKm = Double.parseDouble(fields.get(2).trim());
+            int minutes = Integer.parseInt(fields.get(4).trim());
+            return of(fields.get(1), fields.get(3), minutes, distanceKm, calories);
+        } catch (IllegalArgumentException exception) {
+            throw new DataStorageException("Некоректний CSV-запис тренування: " + fields, exception);
         }
     }
 

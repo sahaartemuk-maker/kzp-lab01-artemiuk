@@ -56,4 +56,29 @@ class MainTest {
         assertEquals(2, Main.run(new String[] {"--queries", "02.09.2026"},
                 new PrintStream(buffer, true, StandardCharsets.UTF_8)));
     }
+
+    @Test
+    void exportWritesCsvAndReportsRoundTrip() throws IOException {
+        Path csv = tempDir.resolve("export").resolve("trainings.csv");
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int code = Main.run(new String[] {"--input", "data/queries.csv",
+            "--output", tempDir.resolve("r.txt").toString(), "--export", csv.toString()},
+                new PrintStream(buffer, true, StandardCharsets.UTF_8));
+        assertEquals(0, code);
+        assertTrue(Files.readString(csv, StandardCharsets.UTF_8)
+                .startsWith("калорії,дата,дистанція,вид,тривалість\n"));
+        assertTrue(buffer.toString(StandardCharsets.UTF_8).contains("рівність: так"));
+    }
+
+    @Test
+    void exportFailureReturnsOneAndShowsCause() throws IOException {
+        Path blocker = Files.writeString(tempDir.resolve("file"), "x", StandardCharsets.UTF_8);
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int code = Main.run(new String[] {"--input", "data/queries.csv",
+            "--output", tempDir.resolve("r.txt").toString(),
+            "--export", blocker.resolve("t.csv").toString()},
+                new PrintStream(buffer, true, StandardCharsets.UTF_8));
+        assertEquals(1, code);
+        assertTrue(buffer.toString(StandardCharsets.UTF_8).contains("Причина:"));
+    }
 }
