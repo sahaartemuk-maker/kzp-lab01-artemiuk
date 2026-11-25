@@ -5,6 +5,9 @@ import java.util.Locale;
 /** Формує текст звіту, однаковий для консолі та файла. */
 public final class ReportFormatter {
 
+    /** Назва показника навантаження, доданого в ЛР № 3. */
+    public static final String LOAD_LABEL = "Сумарне навантаження, бал";
+
     /* Забороняє створення екземплярів службового класу. */
     private ReportFormatter() {
     }
@@ -24,6 +27,8 @@ public final class ReportFormatter {
         report.append(String.format(Locale.ROOT, "%-30s %15d%n", "Коректних записів", summary.count()));
         report.append(String.format(Locale.ROOT, "%-30s %15d%n", "Сумарний час, хв", summary.totalMinutes()));
         report.append(String.format(Locale.ROOT, "%-30s %15.2f%n", "Сумарна дистанція, км", summary.totalDistanceKm()));
+        // Показник ЛР № 3: обчислюється поліморфним методом load() через спільний тип.
+        report.append(String.format(Locale.ROOT, "%-30s %15.2f%n", LOAD_LABEL, stats.totalLoad()));
         if (summary.count() > 0) {
             report.append(String.format(Locale.ROOT, "%-30s %15d  %s%n", "Найбільша витрата калорій",
                     summary.maxCalories(), summary.maxCaloriesLabel()));

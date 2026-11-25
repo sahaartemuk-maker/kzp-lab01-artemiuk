@@ -73,6 +73,20 @@ public final class TrainingStats {
         return summary.maxCaloriesLabel();
     }
 
+    /**
+     * Обчислює сумарне навантаження поліморфно: кожен об'єкт сам знає свою
+     * формулу, тож тут немає перевірок підтипу.
+     *
+     * @return сума {@link Training#load()} усіх коректних тренувань
+     */
+    public double totalLoad() {
+        double total = 0.0;
+        for (Training training : trainings) {
+            total += training.load();
+        }
+        return total;
+    }
+
     /** @return незмінний список повідомлень про пропущені рядки */
     public List<String> errors() {
         return errors;

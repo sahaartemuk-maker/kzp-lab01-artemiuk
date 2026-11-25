@@ -33,9 +33,9 @@ class TrainingSummaryTest {
     @Test
     void ofComputesIndicatorsAndKeepsFirstAmongEqualMaximums() {
         TrainingSummary summary = TrainingSummary.of(List.of(
-                new Training("2026-09-01", "Біг", 45, 8.5, 780),
-                new Training("2026-09-02", "Велосипед", 90, 32.0, 780),
-                new Training("2026-09-04", "Плавання", 60, 2.4, 610)));
+                Training.of("2026-09-01", "Біг", 45, 8.5, 780),
+                Training.of("2026-09-02", "Велосипед", 90, 32.0, 780),
+                Training.of("2026-09-04", "Плавання", 60, 2.4, 610)));
         assertEquals(new TrainingSummary(3, 195, 42.9, 780, "Біг (2026-09-01)"),
                 new TrainingSummary(summary.count(), summary.totalMinutes(),
                         Math.round(summary.totalDistanceKm() * 1000) / 1000.0,
