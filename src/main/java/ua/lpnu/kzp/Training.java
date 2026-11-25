@@ -4,35 +4,55 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Незмінний запис про одне спортивне тренування (варіант 2).
+ * Спільний абстрактний тип тренування (варіант 2).
  *
- * <p>Інваріанти: дата й вид — непорожній текст; хвилини, дистанція та калорії
- * не від'ємні; дистанція — скінченне число. Нуль дозволено, як і в ЛР № 1.
+ * <p>Тут зосереджено спільні поля та інваріанти: дата й вид — непорожній текст;
+ * хвилини, дистанція та калорії не від'ємні; дистанція — скінченне число. Нуль
+ * дозволено, як і в ЛР № 1. Відмінна поведінка — розрахунок навантаження
+ * {@link #load()} — реалізується у підтипах {@link IndoorTraining} і
+ * {@link OutdoorTraining}.
  */
-public final class Training {
+public abstract class Training {
 
     /** Кількість полів у CSV-рядку {@code date;kind;minutes;distanceKm;calories}. */
     public static final int FIELD_COUNT = 5;
 
     private final String date;
     private final String kind;
+    private final TrainingKind type;
     private final int minutes;
     private final double distanceKm;
     private final int calories;
 
     /**
-     * Створює коректний запис після перевірки інваріантів.
+     * Створює спільну частину тренування після перевірки інваріантів.
      *
      * @param date дата тренування
-     * @param kind вид тренування
+     * @param kind вид тренування (текст із CSV)
      * @param minutes тривалість у хвилинах
      * @param distanceKm дистанція в кілометрах
      * @param calories витрата калорій
      * @throws NullPointerException якщо дата або вид дорівнюють {@code null}
      * @throws IllegalArgumentException якщо порушено інваріант
      */
-    public Training(String date, String kind, int minutes, double distanceKm, int calories) {
-        // Перевірки виконуються до присвоєння, тому некоректний об'єкт не створюється.
+    protected Training(String date, String kind, int minutes, double distanceKm, int calories) {
+        // Перевірка виконується до виклику приватного конструктора, тож частково
+        // створений об'єкт не з'являється (і SpotBugs не бачить CT_CONSTRUCTOR_THROW).
+        this(validate(date, kind, minutes, distanceKm, calories), date, kind, minutes, distanceKm, calories);
+    }
+
+    /* Присвоює вже перевірені значення. */
+    private Training(boolean validated, String date, String kind, int minutes, double distanceKm, int calories) {
+        this.date = date.trim();
+        this.kind = kind.trim();
+        this.type = TrainingKind.fromLabel(kind);
+        this.minutes = minutes;
+        this.distanceKm = distanceKm;
+        this.calories = calories;
+    }
+
+    /* Перевіряє інваріанти в тому самому порядку, що й ЛР № 2. */
+    private static boolean validate(String date, String kind, int minutes, double distanceKm, int calories) {
         requireText(Objects.requireNonNull(date, "дата не може бути null"), "порожня дата");
         requireText(Objects.requireNonNull(kind, "вид не може бути null"), "порожній вид тренування");
         if (minutes < 0 || distanceKm < 0 || calories < 0) {
@@ -41,11 +61,29 @@ public final class Training {
         if (!Double.isFinite(distanceKm)) {
             throw new IllegalArgumentException("некоректна дистанція");
         }
-        this.date = date.trim();
-        this.kind = kind.trim();
-        this.minutes = minutes;
-        this.distanceKm = distanceKm;
-        this.calories = calories;
+        return true;
+    }
+
+    /**
+     * Створює тренування потрібного підтипу за видом: у приміщенні —
+     * {@link IndoorTraining}, інакше — {@link OutdoorTraining}.
+     *
+     * @param date дата тренування
+     * @param kind вид тренування
+     * @param minutes тривалість у хвилинах
+     * @param distanceKm дистанція в кілометрах
+     * @param calories витрата калорій
+     * @return створене тренування
+     * @throws NullPointerException якщо дата або вид дорівнюють {@code null}
+     * @throws IllegalArgumentException якщо порушено інваріант
+     */
+    public static Training of(String date, String kind, int minutes, double distanceKm, int calories) {
+        Objects.requireNonNull(date, "дата не може бути null");
+        Objects.requireNonNull(kind, "вид не може бути null");
+        // Єдине місце вибору підтипу; далі код працює лише зі спільним типом.
+        return TrainingKind.fromLabel(kind).isIndoor()
+                ? new IndoorTraining(date, kind, minutes, distanceKm, calories)
+                : new OutdoorTraining(date, kind, minutes, distanceKm, calories);
     }
 
     /**
@@ -53,7 +91,7 @@ public final class Training {
      * конструктор — інваріанти.
      *
      * @param line рядок у форматі {@code date;kind;minutes;distanceKm;calories}
-     * @return створений запис
+     * @return створений запис потрібного підтипу
      * @throws IllegalArgumentException якщо рядок порожній, має іншу кількість полів
      *         або числове поле має помилковий формат
      */
@@ -74,7 +112,7 @@ public final class Training {
             int minutes = Integer.parseInt(fields[2].trim());
             double distanceKm = Double.parseDouble(fields[3].trim());
             int calories = Integer.parseInt(fields[4].trim());
-            return new Training(fields[0], fields[1], minutes, distanceKm, calories);
+            return of(fields[0], fields[1], minutes, distanceKm, calories);
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException("числове поле має помилковий формат", exception);
         }
@@ -87,44 +125,62 @@ public final class Training {
         }
     }
 
+    /**
+     * Обчислює тренувальне навантаження в умовних балах.
+     * Кожен підтип має власну формулу.
+     *
+     * @return навантаження, не від'ємне
+     */
+    public abstract double load();
+
     /** @return дата тренування */
-    public String getDate() {
+    public final String getDate() {
         return date;
     }
 
-    /** @return вид тренування */
-    public String getKind() {
+    /** @return вид тренування (текст із CSV) */
+    public final String getKind() {
         return kind;
     }
 
+    /** @return категорія тренування */
+    public final TrainingKind getType() {
+        return type;
+    }
+
     /** @return тривалість у хвилинах */
-    public int getMinutes() {
+    public final int getMinutes() {
         return minutes;
     }
 
     /** @return дистанція в кілометрах */
-    public double getDistanceKm() {
+    public final double getDistanceKm() {
         return distanceKm;
     }
 
     /** @return витрата калорій */
-    public int getCalories() {
+    public final int getCalories() {
         return calories;
     }
 
     /** @return коротка мітка для звіту у форматі «вид (дата)» */
-    public String label() {
+    public final String label() {
         return String.format(Locale.ROOT, "%s (%s)", kind, date);
     }
 
+    /**
+     * Порівнює тренування за класом і всіма полями запису. Перевірка
+     * {@code getClass()} не дозволяє вважати рівними різні підтипи.
+     */
     @Override
-    public boolean equals(Object other) {
+    public final boolean equals(Object other) {
         if (this == other) {
             return true;
         }
-        if (!(other instanceof Training that)) {
+        if (other == null || getClass() != other.getClass()) {
             return false;
         }
+        Training that = (Training) other;
         return minutes == that.minutes
                 && Double.compare(distanceKm, that.distanceKm) == 0
                 && calories == that.calories
@@ -132,9 +188,10 @@ public final class Training {
                 && kind.equals(that.kind);
     }
 
+    /** Повертає хеш-код, узгоджений із {@link #equals(Object)}. */
     @Override
-    public int hashCode() {
-        return Objects.hash(date, kind, minutes, distanceKm, calories);
+    public final int hashCode() {
+        return Objects.hash(getClass(), date, kind, minutes, distanceKm, calories);
     }
 
     /** Повертає текстове подання запису (не CSV). */

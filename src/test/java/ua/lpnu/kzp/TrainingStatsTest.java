@@ -43,7 +43,7 @@ class TrainingStatsTest {
     @Test
     void validLinesBecomeTrainingObjects() {
         TrainingStats stats = TrainingStats.compute(List.of("2026-09-01;Біг;45;8.5;520", "bad"));
-        assertEquals(List.of(new Training("2026-09-01", "Біг", 45, 8.5, 520)), stats.trainings());
+        assertEquals(List.of(Training.of("2026-09-01", "Біг", 45, 8.5, 520)), stats.trainings());
         assertEquals(new TrainingSummary(1, 45, 8.5, 520, "Біг (2026-09-01)"), stats.summary());
     }
 }

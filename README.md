@@ -1,4 +1,4 @@
-# Спортивні тренування — лабораторна робота № 1 (варіант 2)
+# Спортивні тренування — лабораторні роботи № 1–3 (варіант 2)
 
 ## Призначення
 Консольна програма читає записи тренувань із `data/input.csv`, перевіряє їх,
@@ -27,14 +27,15 @@ date;kind;minutes;distanceKm;calories
 2. Сумарний час, хв.
 3. Сумарна дистанція, км.
 4. Найбільша витрата калорій (з видом і датою тренування).
+5. Сумарне навантаження, бал (з ЛР № 3, поліморфний метод `Training.load()`).
 
 ## Збірка та запуск
 ```text
 ./mvnw clean verify                         # тести + SpotBugs + JAR
-java -jar target/lab01-2.0.0.jar --help
-java -jar target/lab01-2.0.0.jar --version  # 2.0.0+local
-java -jar target/lab01-2.0.0.jar
-java -jar target/lab01-2.0.0.jar --input data/input.csv --output out/report.txt
+java -jar target/lab01-3.0.0.jar --help
+java -jar target/lab01-3.0.0.jar --version  # 3.0.0+local
+java -jar target/lab01-3.0.0.jar
+java -jar target/lab01-3.0.0.jar --input data/input.csv --output out/report.txt
 ```
 У Windows замість `./mvnw` використовуйте `mvnw.cmd`.
 
@@ -54,3 +55,18 @@ src/main/java/ua/lpnu/kzp/
 в конструкторі й фабрикою `fromCsv`) і record `TrainingSummary`. Зовнішня
 поведінка не змінилась — це перевіряє `RegressionTest` проти звіту версії v1.0.0.
 Деталі: [REPORT_LR2.md](REPORT_LR2.md).
+
+## ЛР № 3 — спадкування, інтерфейси й поліморфізм
+`Training` став абстрактним базовим класом зі спільними полями й інваріантами
+та абстрактним методом `load()`. Підтипи:
+
+| Клас | Види | `load()` |
+|---|---|---|
+| `IndoorTraining` | Плавання, Йога | хвилини × інтенсивність |
+| `OutdoorTraining` | Біг, Велосипед, Ходьба, інші | хвилини × інтенсивність + км × 2 |
+
+`TrainingKind` (enum) містить підпис, ознаку «у приміщенні» й коефіцієнт
+інтенсивності. Підтип обирається один раз у фабриці `Training.of`; звіт
+підсумовує `load()` через спільний тип без `if`/`switch` за підтипом.
+У звіт додано рядок «Сумарне навантаження, бал»; решта звіту не змінилась
+(`RegressionTest`). Деталі: [REPORT_LR3.md](REPORT_LR3.md).
