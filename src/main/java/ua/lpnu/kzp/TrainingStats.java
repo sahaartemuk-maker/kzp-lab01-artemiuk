@@ -1,86 +1,80 @@
 package ua.lpnu.kzp;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
-/** Накопичує показники варіанта 2 за коректними записами та список помилок. */
+/** Результат обробки файла: список коректних тренувань, підсумки та помилки. */
 public final class TrainingStats {
 
-    private int validCount;
-    private long totalMinutes;
-    private double totalDistanceKm;
-    private int maxCalories;
-    private String maxCaloriesKind = "";
-    private final List<String> errors = new ArrayList<>();
+    private final List<Training> trainings;
+    private final TrainingSummary summary;
+    private final List<String> errors;
 
-    /**
-     * Обробляє всі рядки: коректні включає в показники, хибні — у список помилок.
-     *
-     * @param lines рядки вхідного файла
-     * @return накопичена статистика
-     */
-    public static TrainingStats compute(List<String> lines) {
-        TrainingStats stats = new TrainingStats();
-        for (int index = 0; index < lines.size(); index++) {
-            stats.accept(index + 1, lines.get(index));
-        }
-        return stats;
+    private TrainingStats(List<Training> trainings, List<String> errors) {
+        this.trainings = List.copyOf(trainings);
+        this.errors = List.copyOf(errors);
+        this.summary = TrainingSummary.of(this.trainings);
     }
 
     /**
-     * Обробляє один рядок.
+     * Перетворює рядки на об'єкти {@link Training}; хибні рядки потрапляють у список помилок.
      *
-     * @param lineNumber номер рядка у файлі, починаючи з 1
-     * @param line вміст рядка
+     * @param lines рядки вхідного файла
+     * @return результат обробки
      */
-    public void accept(int lineNumber, String line) {
-        String error = TrainingParser.validate(line);
-        if (error != null) {
-            errors.add(String.format("Рядок %d: %s", lineNumber, error));
-            return;
+    public static TrainingStats compute(List<String> lines) {
+        List<Training> trainings = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+        for (int lineNumber = 1; lineNumber <= lines.size(); lineNumber++) {
+            String line = lines.get(lineNumber - 1);
+            try {
+                // Запис потрапляє до списку лише після повної перевірки.
+                trainings.add(Training.fromCsv(line));
+            } catch (IllegalArgumentException exception) {
+                errors.add(String.format(Locale.ROOT, "Рядок %d: %s", lineNumber, exception.getMessage()));
+            }
         }
-        String[] fields = TrainingParser.fields(line);
-        int minutes = Integer.parseInt(fields[2]);
-        double distance = Double.parseDouble(fields[3]);
-        int calories = Integer.parseInt(fields[4]);
-        validCount++;
-        totalMinutes += minutes;
-        totalDistanceKm += distance;
-        // Строге «більше» залишає перше тренування серед рівних.
-        if (validCount == 1 || calories > maxCalories) {
-            maxCalories = calories;
-            maxCaloriesKind = fields[1] + " (" + fields[0] + ")";
-        }
+        return new TrainingStats(trainings, errors);
+    }
+
+    /** @return незмінний список коректних тренувань */
+    public List<Training> trainings() {
+        return trainings;
+    }
+
+    /** @return підсумкові показники */
+    public TrainingSummary summary() {
+        return summary;
     }
 
     /** @return кількість коректних записів */
     public int validCount() {
-        return validCount;
+        return summary.count();
     }
 
     /** @return сумарний час у хвилинах */
     public long totalMinutes() {
-        return totalMinutes;
+        return summary.totalMinutes();
     }
 
     /** @return сумарна дистанція в кілометрах */
     public double totalDistanceKm() {
-        return totalDistanceKm;
+        return summary.totalDistanceKm();
     }
 
     /** @return найбільша витрата калорій або 0, якщо записів немає */
     public int maxCalories() {
-        return maxCalories;
+        return summary.maxCalories();
     }
 
     /** @return вид і дата тренування з найбільшою витратою калорій */
     public String maxCaloriesKind() {
-        return maxCaloriesKind;
+        return summary.maxCaloriesLabel();
     }
 
     /** @return незмінний список повідомлень про пропущені рядки */
     public List<String> errors() {
-        return Collections.unmodifiableList(errors);
+        return errors;
     }
 }

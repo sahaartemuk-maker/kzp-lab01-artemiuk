@@ -1,13 +1,14 @@
 package ua.lpnu.kzp;
 
 /**
- * Розбирає та перевіряє один рядок формату
- * {@code date;kind;minutes;distanceKm;calories}.
+ * Сумісний з ЛР № 1 фасад перевірки рядка. Уся логіка розбору тепер живе в
+ * {@link Training#fromCsv(String)}; клас збережено, щоб попередні тести й виклики
+ * працювали без змін.
  */
 public final class TrainingParser {
 
     /** Кількість полів у коректному записі. */
-    public static final int FIELD_COUNT = 5;
+    public static final int FIELD_COUNT = Training.FIELD_COUNT;
 
     /* Забороняє створення екземплярів службового класу. */
     private TrainingParser() {
@@ -20,41 +21,19 @@ public final class TrainingParser {
      * @return опис помилки або {@code null}, якщо рядок коректний
      */
     public static String validate(String line) {
-        if (line == null || line.isBlank()) {
-            return "порожній рядок";
-        }
-        // -1 зберігає порожні поля в кінці рядка.
-        String[] fields = line.split(";", -1);
-        if (fields.length != FIELD_COUNT) {
-            return String.format("очікується %d полів, отримано %d", FIELD_COUNT, fields.length);
-        }
-        if (fields[0].isBlank()) {
-            return "порожня дата";
-        }
-        if (fields[1].isBlank()) {
-            return "порожній вид тренування";
-        }
         try {
-            int minutes = Integer.parseInt(fields[2].trim());
-            double distance = Double.parseDouble(fields[3].trim());
-            int calories = Integer.parseInt(fields[4].trim());
-            if (minutes < 0 || distance < 0 || calories < 0) {
-                return "від'ємне числове значення";
-            }
-            if (Double.isNaN(distance) || Double.isInfinite(distance)) {
-                return "некоректна дистанція";
-            }
-        } catch (NumberFormatException exception) {
-            return "числове поле має помилковий формат";
+            Training.fromCsv(line);
+            return null;
+        } catch (IllegalArgumentException exception) {
+            return exception.getMessage();
         }
-        return null;
     }
 
     /**
-     * Розділяє коректний рядок на поля. Викликати лише після {@link #validate(String)}.
+     * Розділяє рядок на поля без пробілів по краях (допоміжний метод ЛР № 1).
      *
-     * @param line коректний рядок
-     * @return масив із п'яти полів без пробілів по краях
+     * @param line рядок
+     * @return масив полів
      */
     public static String[] fields(String line) {
         String[] fields = line.split(";", -1);

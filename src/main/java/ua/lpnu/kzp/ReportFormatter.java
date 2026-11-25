@@ -16,16 +16,17 @@ public final class ReportFormatter {
      * @return текст звіту з платформним роздільником рядків
      */
     public static String format(TrainingStats stats) {
+        TrainingSummary summary = stats.summary();
         StringBuilder report = new StringBuilder();
         // Locale.ROOT гарантує крапку як десятковий роздільник на всіх ОС.
         report.append(String.format(Locale.ROOT, "Звіт: спортивні тренування%n"));
         report.append(String.format(Locale.ROOT, "%-30s %15s%n", "Показник", "Значення"));
-        report.append(String.format(Locale.ROOT, "%-30s %15d%n", "Коректних записів", stats.validCount()));
-        report.append(String.format(Locale.ROOT, "%-30s %15d%n", "Сумарний час, хв", stats.totalMinutes()));
-        report.append(String.format(Locale.ROOT, "%-30s %15.2f%n", "Сумарна дистанція, км", stats.totalDistanceKm()));
-        if (stats.validCount() > 0) {
+        report.append(String.format(Locale.ROOT, "%-30s %15d%n", "Коректних записів", summary.count()));
+        report.append(String.format(Locale.ROOT, "%-30s %15d%n", "Сумарний час, хв", summary.totalMinutes()));
+        report.append(String.format(Locale.ROOT, "%-30s %15.2f%n", "Сумарна дистанція, км", summary.totalDistanceKm()));
+        if (summary.count() > 0) {
             report.append(String.format(Locale.ROOT, "%-30s %15d  %s%n", "Найбільша витрата калорій",
-                    stats.maxCalories(), stats.maxCaloriesKind()));
+                    summary.maxCalories(), summary.maxCaloriesLabel()));
         } else {
             report.append(String.format(Locale.ROOT, "%-30s %15s%n", "Найбільша витрата калорій", "-"));
             report.append(String.format(Locale.ROOT, "Увага: у файлі немає жодного коректного запису%n"));
