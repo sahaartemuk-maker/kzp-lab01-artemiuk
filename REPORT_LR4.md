@@ -99,7 +99,7 @@ Comparator.comparingDouble(Training::getDistanceKm)
 ## 14. Issues і Pull Request
 | Issue | Зміст | Перевірка |
 |---|---|---|
-| #__ ЛР4: Stream API-запити | `TrainingQueries`, `QueryReportFormatter`, рефакторинг циклів, README, REPORT_LR4 | `TrainingQueriesTest`, `RegressionTest`; PR #__ (`Closes #__`), CI на 3 ОС, тег `v4.0.0` |
+| #14 ЛР4: Stream API-запити | `TrainingQueries`, `QueryReportFormatter`, рефакторинг циклів, README, REPORT_LR4 | `TrainingQueriesTest`, `RegressionTest`; PR #13 (`Closes #14`), CI на 3 ОС, тег `v4.0.0` |
 
 ## 15. Використання ШІ
 Інструмент: Claude (ролі з `ai/`). Розробник — варіанти конвеєрів; Валідатор — межа 45 хв, дубль дати, рівна дистанція,
