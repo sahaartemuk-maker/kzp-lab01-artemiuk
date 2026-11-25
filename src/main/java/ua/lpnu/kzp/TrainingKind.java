@@ -1,5 +1,6 @@
 package ua.lpnu.kzp;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 /**
@@ -42,12 +43,11 @@ public enum TrainingKind {
      */
     public static TrainingKind fromLabel(String text) {
         String normalized = text.trim().toLowerCase(Locale.ROOT);
-        for (TrainingKind kind : values()) {
-            if (kind != OTHER && kind.label.toLowerCase(Locale.ROOT).equals(normalized)) {
-                return kind;
-            }
-        }
-        return OTHER;
+        return Arrays.stream(values())
+                .filter(kind -> kind != OTHER)
+                .filter(kind -> kind.label.toLowerCase(Locale.ROOT).equals(normalized))
+                .findFirst()
+                .orElse(OTHER);
     }
 
     /** @return текстовий підпис виду */

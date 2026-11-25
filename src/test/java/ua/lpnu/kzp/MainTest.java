@@ -37,4 +37,23 @@ class MainTest {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         assertEquals(2, Main.run(new String[] {"--bad"}, new PrintStream(buffer, true, StandardCharsets.UTF_8)));
     }
+
+    @Test
+    void queriesOptionPrintsStreamResultsAfterUnchangedReport(@org.junit.jupiter.api.io.TempDir Path dir) {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int code = Main.run(new String[] {"--input", "data/queries.csv",
+                "--output", dir.resolve("r.txt").toString(), "--queries", "2026-09-30"},
+                new PrintStream(buffer, true, StandardCharsets.UTF_8));
+        String text = buffer.toString(StandardCharsets.UTF_8);
+        assertEquals(0, code);
+        assertTrue(text.contains("Запити Stream API"));
+        assertTrue(text.contains("Пошук за датою 2026-09-30: не знайдено"));
+    }
+
+    @Test
+    void queriesOptionRejectsBadDate() {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        assertEquals(2, Main.run(new String[] {"--queries", "02.09.2026"},
+                new PrintStream(buffer, true, StandardCharsets.UTF_8)));
+    }
 }

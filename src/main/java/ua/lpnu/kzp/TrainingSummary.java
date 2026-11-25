@@ -1,5 +1,6 @@
 package ua.lpnu.kzp;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,7 +32,7 @@ public record TrainingSummary(int count,
     }
 
     /**
-     * Обчислює підсумки за списком коректних тренувань.
+     * Обчислює підсумки за списком коректних тренувань потоковими запитами (ЛР № 4).
      *
      * @param trainings тренування у порядку файла
      * @return підсумкові показники
@@ -40,17 +41,12 @@ public record TrainingSummary(int count,
         if (trainings.isEmpty()) {
             return EMPTY;
         }
-        long minutes = 0;
-        double distance = 0.0;
-        Training top = trainings.get(0);
-        for (Training training : trainings) {
-            minutes += training.getMinutes();
-            distance += training.getDistanceKm();
-            // Строге «більше» залишає перше тренування серед рівних, як у ЛР № 1.
-            if (training.getCalories() > top.getCalories()) {
-                top = training;
-            }
-        }
+        long minutes = trainings.stream().mapToLong(Training::getMinutes).sum();
+        double distance = trainings.stream().mapToDouble(Training::getDistanceKm).sum();
+        // BinaryOperator.maxBy залишає перший елемент серед рівних, як строге «>» у ЛР № 1.
+        Training top = trainings.stream()
+                .max(Comparator.comparingInt(Training::getCalories))
+                .orElseThrow();
         return new TrainingSummary(trainings.size(), minutes, distance, top.getCalories(), top.label());
     }
 }

@@ -4,15 +4,18 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /** Консольна програма обліку спортивних тренувань (варіант 2). */
 public final class Main {
 
     private static final String USAGE =
-            "Використання: java -jar lab01-3.0.0.jar [--help] [--version] [--input <файл>] [--output <файл>]%n"
+            "Використання: java -jar lab01-4.0.0.jar [--help] [--version] [--input <файл>] [--output <файл>] [--queries <дата>]%n"
             + "  --input   вхідний CSV (за замовчуванням data/input.csv)%n"
-            + "  --output  файл звіту (за замовчуванням out/report.txt)%n";
+            + "  --output  файл звіту (за замовчуванням out/report.txt)%n"
+            + "  --queries додатково вивести запити Stream API; <дата> (рррр-мм-дд) — для пошуку%n";
 
     /* Забороняє створення екземплярів службового класу. */
     private Main() {
@@ -42,6 +45,7 @@ public final class Main {
         }
         Path input = Path.of("data", "input.csv");
         Path output = Path.of("out", "report.txt");
+        LocalDate searchDate = null;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if ("--help".equals(arg)) {
@@ -51,6 +55,13 @@ public final class Main {
                 input = Path.of(args[++i]);
             } else if ("--output".equals(arg) && i + 1 < args.length) {
                 output = Path.of(args[++i]);
+            } else if ("--queries".equals(arg) && i + 1 < args.length) {
+                try {
+                    searchDate = LocalDate.parse(args[++i]);
+                } catch (DateTimeParseException exception) {
+                    out.printf("Некоректна дата: %s%n", args[i]);
+                    return 2;
+                }
             } else {
                 out.printf("Невідомий або неповний аргумент: %s%n", arg);
                 out.printf(USAGE);
@@ -59,8 +70,13 @@ public final class Main {
         }
         try {
             List<String> lines = FileReport.readLines(input);
-            String report = ReportFormatter.format(TrainingStats.compute(lines));
+            TrainingStats stats = TrainingStats.compute(lines);
+            String report = ReportFormatter.format(stats);
             out.print(report);
+            if (searchDate != null) {
+                out.printf("%n");
+                out.print(QueryReportFormatter.format(stats.trainings(), searchDate));
+            }
             FileReport.writeReport(output, report);
             out.printf("%nЗвіт записано у %s%n", output);
             return 0;

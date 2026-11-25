@@ -32,10 +32,10 @@ date;kind;minutes;distanceKm;calories
 ## Збірка та запуск
 ```text
 ./mvnw clean verify                         # тести + SpotBugs + JAR
-java -jar target/lab01-3.0.0.jar --help
-java -jar target/lab01-3.0.0.jar --version  # 3.0.0+local
-java -jar target/lab01-3.0.0.jar
-java -jar target/lab01-3.0.0.jar --input data/input.csv --output out/report.txt
+java -jar target/lab01-4.0.0.jar --help
+java -jar target/lab01-4.0.0.jar --version  # 4.0.0+local
+java -jar target/lab01-4.0.0.jar
+java -jar target/lab01-4.0.0.jar --input data/input.csv --output out/report.txt
 ```
 У Windows замість `./mvnw` використовуйте `mvnw.cmd`.
 
@@ -70,3 +70,24 @@ src/main/java/ua/lpnu/kzp/
 підсумовує `load()` через спільний тип без `if`/`switch` за підтипом.
 У звіт додано рядок «Сумарне навантаження, бал»; решта звіту не змінилась
 (`RegressionTest`). Деталі: [REPORT_LR3.md](REPORT_LR3.md).
+
+## ЛР № 4 — потокова обробка даних (Stream API)
+
+Запити винесено в клас `TrainingQueries` (без форматування), текст формує `QueryReportFormatter`.
+Основний звіт не змінився; результати запитів виводяться лише з опцією `--queries <дата>`:
+
+```bash
+java -jar target/lab01-4.0.0.jar --input data/queries.csv --queries 2026-09-02
+```
+
+| Запит | Метод | Конвеєр | Результат |
+|---|---|---|---|
+| Відбір: тривалість ≥ 45 хв | `longTrainings` | `filter` → `toList` | `List<Training>` |
+| Перетворення: дистанції | `distances` | `map(getDistanceKm)` → `toList` | `List<Double>` |
+| Групування: сума км за видом | `distanceByKind` | `groupingBy(getType, EnumMap, summingDouble)` | `Map<TrainingKind, Double>` |
+| Статистика калорій* | `caloriesStatistics` | `summarizingInt(getCalories)` | `IntSummaryStatistics` |
+| Top-5: дистанція ↓, дата ↑ | `topByDistance` | `sorted(comparingDouble.reversed().thenComparing)` → `limit(n)` | `List<Training>` |
+| Пошук за датою | `findByDate` | `filter` → `findFirst` | `Optional<Training>` |
+
+\* Поле «пульс» варіанта замінено на наявне «калорії», щоб не змінювати формат CSV.
+Контрольний набір — `data/queries.csv` (7 записів: межа 45 хв, дубль дати 2026-09-02, рівні 8.5 км).
