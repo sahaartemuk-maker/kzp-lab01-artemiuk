@@ -39,8 +39,9 @@ jobs:
       - name: Run JAR
         shell: bash
         run: |
-          java -jar target/lab01-3.0.0.jar --version
-          java -jar target/lab01-3.0.0.jar
+          java -jar target/lab01-4.0.0.jar --version
+          java -jar target/lab01-4.0.0.jar
+          java -jar target/lab01-4.0.0.jar --input data/queries.csv --output out/queries-report.txt --queries 2026-09-02
 
       - name: Upload JAR
         if: success()

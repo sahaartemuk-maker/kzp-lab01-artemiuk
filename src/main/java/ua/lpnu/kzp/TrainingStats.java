@@ -80,11 +80,9 @@ public final class TrainingStats {
      * @return сума {@link Training#load()} усіх коректних тренувань
      */
     public double totalLoad() {
-        double total = 0.0;
-        for (Training training : trainings) {
-            total += training.load();
-        }
-        return total;
+        return trainings.stream()
+                .mapToDouble(Training::load)
+                .sum();
     }
 
     /** @return незмінний список повідомлень про пропущені рядки */
