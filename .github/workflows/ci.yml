@@ -1,0 +1,51 @@
+# Один workflow перевіряє однаковий commit на трьох операційних системах.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # verify = компіляція → тести → пакування JAR → SpotBugs.
+      - name: Verify on Unix
+        if: runner.os != 'Windows'
+        run: ./mvnw -B verify "-Dbuild.number=${{ github.run_number }}"
+
+      - name: Verify on Windows
+        if: runner.os == 'Windows'
+        run: .\mvnw.cmd -B verify "-Dbuild.number=${{ github.run_number }}"
+
+      # Димова перевірка зібраного JAR на кожній ОС.
+      - name: Run JAR
+        shell: bash
+        run: |
+          java -jar target/lab01-1.0.0.jar --version
+          java -jar target/lab01-1.0.0.jar
+
+      - name: Upload JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-${{ matrix.os }}-${{ github.run_number }}
+          path: target/*.jar
+          if-no-files-found: error
