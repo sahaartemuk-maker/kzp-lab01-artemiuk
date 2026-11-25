@@ -1,4 +1,4 @@
-# Спортивні тренування — лабораторні роботи № 1–3 (варіант 2)
+# Спортивні тренування — лабораторні роботи № 1–5 (варіант 2)
 
 ## Призначення
 Консольна програма читає записи тренувань із `data/input.csv`, перевіряє їх,
@@ -32,10 +32,10 @@ date;kind;minutes;distanceKm;calories
 ## Збірка та запуск
 ```text
 ./mvnw clean verify                         # тести + SpotBugs + JAR
-java -jar target/lab01-4.0.0.jar --help
-java -jar target/lab01-4.0.0.jar --version  # 4.0.0+local
-java -jar target/lab01-4.0.0.jar
-java -jar target/lab01-4.0.0.jar --input data/input.csv --output out/report.txt
+java -jar target/lab01-5.0.0.jar --help
+java -jar target/lab01-5.0.0.jar --version  # 4.0.0+local
+java -jar target/lab01-5.0.0.jar
+java -jar target/lab01-5.0.0.jar --input data/input.csv --output out/report.txt
 ```
 У Windows замість `./mvnw` використовуйте `mvnw.cmd`.
 
@@ -77,7 +77,7 @@ src/main/java/ua/lpnu/kzp/
 Основний звіт не змінився; результати запитів виводяться лише з опцією `--queries <дата>`:
 
 ```bash
-java -jar target/lab01-4.0.0.jar --input data/queries.csv --queries 2026-09-02
+java -jar target/lab01-5.0.0.jar --input data/queries.csv --queries 2026-09-02
 ```
 
 | Запит | Метод | Конвеєр | Результат |
@@ -91,3 +91,24 @@ java -jar target/lab01-4.0.0.jar --input data/queries.csv --queries 2026-09-02
 
 \* Поле «пульс» варіанта замінено на наявне «калорії», щоб не змінювати формат CSV.
 Контрольний набір — `data/queries.csv` (7 записів: межа 45 хв, дубль дати 2026-09-02, рівні 8.5 км).
+
+## ЛР № 5 — параметризоване сховище, винятки й CSV-експорт
+
+Коректні записи кладуться у `Repository<Training>`, експортуються універсальним рефлексивним
+`CsvExporter` у UTF-8 CSV, читаються назад документним `CsvParser` і порівнюються через `equals`:
+
+```bash
+java -jar target/lab01-5.0.0.jar --input data/queries.csv --export out/trainings.csv
+```
+
+| Компонент | Призначення |
+|---|---|
+| `Repository<T>` | `add`, `addAll`, `all()` (незмінний знімок), `find(Predicate<? super T>)` |
+| `@CsvColumn` | `RUNTIME`, `FIELD`, `String value()` — назва стовпця |
+| `CsvExporter` | поля з `@CsvColumn` по ланцюжку класів, сортування за іменем, екранування, `Files.writeString` UTF-8 |
+| `CsvParser` | машина станів: коми, лапки й перенесення рядків усередині лапок, `\n` / `\r\n` |
+| `Training.fromCsvFields`, `Trainings.readCsv` | предметне відновлення записів (ключ round-trip — дата + вид) |
+| `DataStorageException` | перевірюваний виняток із `cause` (`IOException`, `NumberFormatException`, `IllegalArgumentException`) |
+
+Заголовок CSV: `калорії,дата,дистанція,вид,тривалість` (порядок — Java-імена `calories, date, distanceKm, kind, minutes`).
+Помилка експорту/імпорту → код завершення 1 і рядок «Причина: …». Основний звіт не змінився.
