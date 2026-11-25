@@ -2,7 +2,7 @@
 
 ## 1. Тема, номер і варіант
 ЛР № 6, варіант 2 — «Спортивні тренування». Студент: Артем'юк. ОС розробки: macOS (Apple Silicon),
-Python 3.12 (Homebrew `python@3.12`); CI — Ubuntu, Windows, macOS з Python 3.12. Версія пакета 6.0.0, тег `v6.0.0`.
+Python 3.12 (Homebrew `python@3.12`); CI — Ubuntu, Windows, macOS з Python 3.12. Версія Python-пакета 6.0.0, тег `v6.0.0` (Java-частина не змінювалась і лишається 5.0.0).
 
 ## 2. Мета роботи
 Створено Python-пакет `kzp_lab06` (тека `python/`), який читає CSV тренувань через `csv.DictReader`,
@@ -135,7 +135,7 @@ python3.12 -m venv .venv-wheel
 | № | Зміна | Перевірка |
 |---|---|---|
 | Issue #17 | Python-пакет, тести, ruff, wheel, CI, документація | — |
-| PR (Closes #17) | гілка `lab06-python` → `main` | pytest 34 passed, ruff чисто, wheel, CI зелений на 3 ОС |
+| PR #18 (Closes #17) | гілка `lab06-python` → `main`, merge `cd4a0ef`, тег `v6.0.0` | pytest 34 passed, ruff чисто, wheel, CI зелений на 3 ОС |
 
 ## 14. Академічна доброчесність
 Інструмент: Claude (Anthropic) у застосунку Claude з доступом до теки проєкту. Ролі: менеджер (поділ на
