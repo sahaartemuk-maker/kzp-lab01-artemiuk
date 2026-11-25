@@ -1,8 +1,4 @@
 # Спортивні тренування — лабораторні роботи № 1–7 (варіант 2)
-# Спортивні тренування — лабораторні роботи № 1–5 (варіант 2)
-=======
-# Спортивні тренування — лабораторні роботи № 1–7(варіант 2)
->>>>>>> origin/main
 
 ## Призначення
 Консольна програма читає записи тренувань із `data/input.csv`, перевіряє їх,
@@ -116,3 +112,39 @@ java -jar target/lab01-5.0.0.jar --input data/queries.csv --export out/trainings
 
 Заголовок CSV: `калорії,дата,дистанція,вид,тривалість` (порядок — Java-імена `calories, date, distanceKm, kind, minutes`).
 Помилка експорту/імпорту → код завершення 1 і рядок «Причина: …». Основний звіт не змінився.
+
+## ЛР № 6 — обробка даних засобами Python
+Окремий Python-пакет `kzp_lab06` у теці `python/` (Python ≥ 3.11; Java-частина не змінювалась).
+
+```text
+python/
+  pyproject.toml          пакет, dev-залежності (pytest, ruff, build), скрипт kzp-lab06, налаштування ruff
+  data/input.csv          контрольний CSV варіанта (8 записів)
+  reports/summary.txt     приклад звіту
+  src/kzp_lab06/
+    errors.py             DataError(ValueError)
+    loader.py             csv.DictReader (UTF-8, newline=""), перевірка заголовка й типів
+    analysis.py           відбір, множина видів, словник дистанцій, summarize(*metrics, **labels)
+    reporting.py          детермінований текст звіту, запис через with
+    cli.py                аргументи input/output, коди 0/1/2
+  tests/                  pytest: loader, analysis, reporting + CLI
+```
+
+Формат CSV (UTF-8, кома, заголовок обов'язковий): `date,kind,duration,distance,pulse` —
+`date` ISO `YYYY-MM-DD`, `kind` текст (може містити кому в лапках), `duration` і `pulse` — цілі ≥ 0,
+`distance` — скінченне дійсне ≥ 0. Порожній файл → помилка; лише заголовок → звіт із 0 записів.
+
+```bash
+cd python
+python3.12 -m venv .venv
+source .venv/bin/activate                 # Windows: .venv\Scripts\activate
+python -m pip install -e ".[dev]"
+python -m pytest
+ruff check .
+ruff format --check .
+python -m build
+python -m kzp_lab06.cli data/input.csv reports/summary.txt
+```
+
+Коди завершення: `0` — успіх; `1` — помилка даних («Помилка даних: Рядок N: поле X …»); `2` — помилка файлу.
+CI: `.github/workflows/python.yml` (ubuntu/windows/macos, Python 3.12, wheel як артефакт).
