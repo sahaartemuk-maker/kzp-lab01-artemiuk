@@ -75,9 +75,7 @@ java -jar target/lab01-3.0.0.jar
 ## 11. GitHub Issues і Pull Request
 | Issue | Зміна | Перевірка |
 |---|---|---|
-| #… ЛР3: базовий тип і підтипи | `Training`, `IndoorTraining`, `OutdoorTraining` | `PolymorphismTest` |
-| #… ЛР3: enum TrainingKind | `TrainingKind` | `TrainingKindTest` |
-| #… ЛР3: рівність і звіт | `equals`/`hashCode`, `totalLoad` | `RegressionTest` |
+| #10 ЛР3: спадкування, інтерфейси й поліморфізм | `Training` (abstract), `IndoorTraining`, `OutdoorTraining`, `TrainingKind`, `equals`/`hashCode`, `totalLoad`, README, REPORT_LR3 | `PolymorphismTest`, `TrainingKindTest`, `RegressionTest`; PR #11 (`Closes #10`), 6 перевірок CI зелені на Windows/macOS/Ubuntu, тег `v3.0.0` |
 
 ## 12. Порівняння поведінки
 Звіт на даних ЛР № 1 після вилучення нового рядка «Сумарне навантаження, бал»
@@ -94,7 +92,7 @@ java -jar target/lab01-3.0.0.jar
 розробник, валідатор, документатор, рецензент. Прийнято: абстрактний клас,
 делегування конструктора для SpotBugs, `OTHER` для невідомих видів.
 Відхилено: рядок навантаження без перевірки сумісності. Власний внесок і
-розуміння кожного рядка підтверджую: ________.
+розуміння кожного рядка підтверджую: Артем'юк.
 
 ## 14. Відповіді на контрольні питання
 1. Зберігає спільні поля й інваріанти в одному місці.
