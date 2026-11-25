@@ -148,3 +148,32 @@ python -m kzp_lab06.cli data/input.csv reports/summary.txt
 
 Коди завершення: `0` — успіх; `1` — помилка даних («Помилка даних: Рядок N: поле X …»); `2` — помилка файлу.
 CI: `.github/workflows/python.yml` (ubuntu/windows/macos, Python 3.12, wheel як артефакт).
+
+## ЛР № 7 — об'єктно-орієнтована обробка даних у Python
+Пакет перейменовано на `kzp_lab07` (версія 7.0.0, скрипт `kzp-lab07`); формат CSV і перші рядки звіту ЛР6
+не змінилися, у кінець звіту додано блок «Навантаження за видом».
+
+```text
+python/src/kzp_lab07/
+  models.py      Training (@property + setter-валідація, __str__/__repr__/__eq__),
+                 підтипи Running / Cycling / GeneralTraining з різними load(),
+                 Protocol Loadable, @dataclass(frozen=True) KindLoad і LoadSummary
+  loader.py      CSV → об'єкти (factory training_class за видом), «Рядок N: поле X …»
+  analysis.py    функції над об'єктами без перевірок підтипу; load_by_kind, ordered_by_load (key)
+  reporting.py   format_report, контекстний менеджер ReportWriter (атомарний запис)
+  errors.py, cli.py
+python/reports/summary_lr6.txt   еталон звіту ЛР6 для регресійного тесту
+```
+
+| Підтип | Види | `load()`, бал |
+|---|---|---|
+| `Running` | «Біг…» | `duration × pulse / 100` |
+| `Cycling` | «Велосипед…» | `distance × 2 + duration × 0.5` |
+| `GeneralTraining` | інші (плавання, ходьба, йога) | `duration × pulse / 150` |
+
+```bash
+cd python && source .venv/bin/activate
+python -m pip install -e ".[dev]"
+python -m pytest && ruff check . && ruff format --check . && python -m build
+python -m kzp_lab07.cli data/input.csv reports/summary.txt
+```

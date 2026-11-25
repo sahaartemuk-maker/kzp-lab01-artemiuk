@@ -1,4 +1,4 @@
-name: Python CI (ЛР6)
+name: Python CI (ЛР6–7)
 
 on:
   push:
@@ -50,14 +50,14 @@ jobs:
           python -m venv .venv-wheel
           if [ -x .venv-wheel/Scripts/python.exe ]; then PY=.venv-wheel/Scripts/python.exe; else PY=.venv-wheel/bin/python; fi
           "$PY" -m pip install --no-deps dist/*.whl
-          "$PY" -m kzp_lab06.cli data/input.csv reports/wheel-summary.txt
+          "$PY" -m kzp_lab07.cli data/input.csv reports/wheel-summary.txt
           cat reports/wheel-summary.txt
 
       - name: CLI error scenario must exit 1
         run: |
           printf 'date,kind,duration,distance,pulse\n2026-09-01,Біг,x,1,1\n' > broken.csv
           set +e
-          python -m kzp_lab06.cli broken.csv reports/broken.txt
+          python -m kzp_lab07.cli broken.csv reports/broken.txt
           code=$?
           set -e
           echo "exit=$code"
@@ -65,5 +65,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: kzp-lab06-wheel-${{ matrix.os }}
+          name: kzp-lab07-wheel-${{ matrix.os }}
           path: python/dist/*.whl

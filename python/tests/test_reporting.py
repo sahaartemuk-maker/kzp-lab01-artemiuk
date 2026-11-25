@@ -1,27 +1,41 @@
-"""Тести звіту, запису файла та CLI."""
+"""Тести звіту, сумісності з ЛР6, запису файла та CLI."""
 
 from pathlib import Path
 
-from kzp_lab06 import format_report, load_records, write_report
-from kzp_lab06.cli import main
+import pytest
 
-EXPECTED = """\
-Записів: 8
-Види тренувань (6): Біг; Біг, інтервали; Велосипед; Йога; Плавання; Ходьба
-Тренувань від 45 хв: 6
-Дистанція за видом (від 45 хв):
-  Біг: 17.70 км
-  Велосипед: 60.50 км
-  Йога: 0.00 км
-  Плавання: 2.40 км
-Середній пульс: 134.1 уд/хв
-Найдовше тренування: Велосипед (2026-09-02), 90 хв
+from kzp_lab07 import ReportWriter, format_report, load_records, write_report
+from kzp_lab07.cli import main
+
+LR6_BASELINE = Path(__file__).resolve().parents[1] / "reports" / "summary_lr6.txt"
+
+LOAD_BLOCK = """\
+Навантаження за видом (бал):
+  Біг: 145.90 (2)
+  Біг, інтервали: 67.20 (1)
+  Велосипед: 211.00 (2)
+  Йога: 36.80 (1)
+  Плавання: 51.20 (1)
+  Ходьба: 21.00 (1)
+Сумарне навантаження: 533.10 бал
 """
 
 
-def test_full_report(input_csv: Path) -> None:
-    """Повний звіт контрольного файла збігається з еталоном."""
-    assert format_report(load_records(input_csv)) == EXPECTED
+@pytest.fixture
+def expected() -> str:
+    """Еталон: звіт ЛР6 без змін + новий блок навантаження."""
+    return LR6_BASELINE.read_text(encoding="utf-8") + LOAD_BLOCK
+
+
+def test_lr6_part_unchanged(input_csv: Path) -> None:
+    """Регресія: перші рядки звіту байт-у-байт збігаються зі звітом ЛР6."""
+    report = format_report(load_records(input_csv))
+    assert report.startswith(LR6_BASELINE.read_text(encoding="utf-8"))
+
+
+def test_full_report(input_csv: Path, expected: str) -> None:
+    """Повний звіт контрольного файла."""
+    assert format_report(load_records(input_csv)) == expected
 
 
 def test_empty_report() -> None:
@@ -29,23 +43,39 @@ def test_empty_report() -> None:
     assert format_report([]) == (
         "Записів: 0\nВиди тренувань (0): немає\nТренувань від 45 хв: 0\n"
         "Дистанція за видом (від 45 хв):\n  немає\nСередній пульс: —\n"
-        "Найдовше тренування: —\n"
+        "Найдовше тренування: —\nНавантаження за видом (бал):\n  немає\n"
+        "Сумарне навантаження: 0.00 бал\n"
     )
 
 
 def test_write_report(tmp_path: Path) -> None:
-    """Запис UTF-8 у новий каталог."""
+    """Запис UTF-8 у новий каталог, тимчасовий файл прибрано."""
     output = tmp_path / "nested" / "report.txt"
     write_report(output, "Готово\n")
     assert output.read_bytes() == "Готово\n".encode()
+    assert list(output.parent.iterdir()) == [output]
 
 
-def test_cli_success(input_csv: Path, tmp_path: Path, capsys) -> None:
+def test_report_writer_closes_on_exception(tmp_path: Path) -> None:
+    """Контекстний менеджер: при винятку файл закрито, ціль не змінено, виняток не загублено."""
+    output = tmp_path / "report.txt"
+    output.write_text("старий\n", encoding="utf-8")
+    writer = ReportWriter(output)
+    with pytest.raises(RuntimeError, match="збій"):
+        with writer as target:
+            target.write("новий")
+            raise RuntimeError("збій")
+    assert writer.closed
+    assert output.read_text(encoding="utf-8") == "старий\n"
+    assert list(tmp_path.iterdir()) == [output]
+
+
+def test_cli_success(input_csv: Path, tmp_path: Path, expected: str, capsys) -> None:
     """Успішний запуск: код 0, файл збігається з еталоном, вхід не змінено."""
     before = input_csv.read_bytes()
     output = tmp_path / "summary.txt"
     assert main([str(input_csv), str(output)]) == 0
-    assert output.read_text(encoding="utf-8") == EXPECTED
+    assert output.read_text(encoding="utf-8") == expected
     assert input_csv.read_bytes() == before
     assert "Звіт записано" in capsys.readouterr().out
 

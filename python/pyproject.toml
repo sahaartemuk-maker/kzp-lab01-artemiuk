@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kzp-lab06"
-version = "6.0.0"
-description = "ЛР6: звіт за CSV спортивних тренувань (варіант 2)"
+name = "kzp-lab07"
+version = "7.0.0"
+description = "ЛР7: ООП-обробка CSV спортивних тренувань (варіант 2)"
 requires-python = ">=3.11"
 authors = [{ name = "Артем'юк" }]
 
@@ -17,7 +17,7 @@ dev = [
 ]
 
 [project.scripts]
-kzp-lab06 = "kzp_lab06.cli:main"
+kzp-lab07 = "kzp_lab07.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
